@@ -11,5 +11,5 @@ exports.signup = catchAsync ( async (req, res, next) => {
         data: { 
             user: newUser
          }
-    });
+    });  
 });
