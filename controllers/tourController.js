@@ -21,16 +21,8 @@ exports.getAllTours =  catchAsync (async (req, res, next) => {
     //execute the query...
     const features = new APIFeatures(Tour.find(), req.query).filter().sort().limitFields().pagination();    
     const tours = await features.query;
+    
 
-   
-    //another way to read query(filtering)
-   // const query = await Tour.find()
-   // .where('duraton')
-   // .equals(5)
-   // .where('difficulty')
-   // .equals('easy');
-   
-    //send response...
     res.status(200).json({
         status: 'success',
         results: tours.length,

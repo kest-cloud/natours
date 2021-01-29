@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema ({
     password: {
         type: 'String',
         required: [true, 'Please provide a password'],
-        minlength: 8
+        minlength: 8,
+        select: false
     },
     passwordConfirm: {
         type: 'String',
@@ -34,18 +35,23 @@ const userSchema = new mongoose.Schema ({
     }
 });
 
-userSchema.pre('save', function (next) {
+userSchema.pre('save', async function (next) {
     //Only run this fucntion if password was modified
     if(!this.isModified('password')) 
      return next();
 
      //Hash the password with cost of 12
-    this.password =  await bycrypt.hash(this.password, 12);
+    this.password =  await bcrypt.hash(this.password, 12);
 
-    //Delete the password confirm
-    this.passwordComfirm = undefined;
+    //Delete the password confirm fields...
+    this.passwordConfirm = undefined;
     next();
 });
+
+userSchema.methods.correctPassword = async function (candidatePasword,
+    userPassword) {
+    return await bcrypt.compare(candidatePasword, userPassword);
+}
 
 const User = mongoose.model('User', userSchema);
 
