@@ -22,7 +22,11 @@ router
 .route('/:id')
 .get(tourController.getTours)
 .patch(tourController.updateTour)
-.delete(tourController.deleteTour);
+.delete(
+    authController.protect, 
+    authController.retrictTo('admin', 'lead-guide'),
+    tourController.deleteTour
+    );
 
 
 

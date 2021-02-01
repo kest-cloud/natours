@@ -1,3 +1,4 @@
+const { promisify } = require('util');
 const jwt =  require ('jsonwebtoken');
 const catchAsync = require('../utils/catchAsync');
 const User  = require ('./../models/userModel');
@@ -14,7 +15,9 @@ exports.signup = catchAsync ( async (req, res, next) => {
         name: req.body.name,
         email:req.body.email,
         password: req.body.password,
-        passwordConfirm: req.body.passwordConfirm
+        passwordConfirm: req.body.passwordConfirm,
+        passwordChangedAt: req.body.passwordChangedAt,
+        role: req.body.role
     });
 
     const token = signToken(newUser._id);
@@ -54,14 +57,57 @@ exports.login = catchAsync( async (req, res, next) => {
 
 exports.protect = catchAsync (async (req, res, next) => {
     //1) Getting token and Check if it exist
-
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+    if (!token) {
+        return next (new AppError('You are not logged in! Please log in to get acesss.', 401))
+    };
+  
     //2) Verification token
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
 
     //3) Check if user still exists
+    const currentUser = await User.findById(decoded.id);
+    if(!currentUser) {
+        return next(new AppError('The user belonging to this token no longer exist.', 401));
+    }
 
     //4) check if user changed password after the token was issued
-    
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+        return next(new AppError('User recently changed password! Please log in again.', 401));
+    }; 
 
+
+    //Grant Access To Protected Route
+    req.user = currentUser;
     next();
 });
 
+exports.retrictTo = (...roles) => {
+    return (req, res, next) => {
+        //Roles is an array ['admin', 'lead-guide'], role is now just user
+        if(!roles.includes(req.user.role)) {
+            return next(new AppError('You do not have permission to perform this action', 403))
+        }
+        next();
+    };
+};
+
+exports.forgotPassword =  catchAsync ( async (req, res, next) => {
+    //1) Get user base on posted image
+    const user =  await User.findOne( {email: req.body.email});
+
+    if(!user) {
+        return next (new AppError('There is no user with email address.', 404));
+    }
+
+    //2)Generate the random token
+    const 
+
+    //3)Send it to user's email
+});
+
+exports.resetPassword = (req, res, next) => {}
