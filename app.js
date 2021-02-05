@@ -47,7 +47,7 @@ app.use(xss());
 // Preventing parameter pollution 
 app.use(hpp
     ({
-    whitelist: ['duration', 'ratingsQuantity', 'ratingsAverage', 'maxGroupsize', 'difficulty', 'price']
+    nodewhitelist: ['duration', 'ratingsQuantity', 'ratingsAverage', 'maxGroupsize', 'difficulty', 'price']
 }));
 
 // Serving static files
