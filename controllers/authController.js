@@ -106,8 +106,7 @@ exports.retrictTo = (...roles) => {
         //Roles is an array ['admin', 'lead-guide'], role is now just user
         if(!roles.includes(req.user.role)) {
             return next(new AppError('You do not have permission to perform this action', 403))
-        }
-        next();
+        }  
     };
 };
 
